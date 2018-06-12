@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+/src/**/*.js
+/src/**/*.d.ts
+/test/**/*.d.ts
+/test/**/*.js
+*.map
+package-lock.json
