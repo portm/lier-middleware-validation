@@ -31,7 +31,6 @@
   "devDependencies": {
     "junit": "^1.4.9",
     "nokit": "^0.27.1",
-    "typescript": "^2.9.1",
-    "typings": "^2.1.1"
+    "typescript": "^2.9.1"
   }
 }
