@@ -1,6 +1,6 @@
 {
   "name": "lier-middleware-validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/portm/lier-middleware-validation#readme",
   "dependencies": {
-    "lier": "^2.1.11",
+    "lier": "^2.1.15",
     "lodash": "^4.17.10"
   },
   "devDependencies": {
