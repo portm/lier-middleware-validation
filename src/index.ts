@@ -3,36 +3,74 @@ import * as lier from 'lier'
 import { Tree } from 'lier/src/grammar/transform/ast-lier'
 import { LierError } from 'lier/src/interfaces'
 
-export interface ValidateOptionItem {
+export interface ValidateRule {
     lier?: Tree | string
     defaults?: any
     optional?: boolean
-    empty?: boolean
-    message?: string
+    trim?: Array<string | string[]>
 }
 
-export type ValidateOptions = Array<ValidateOptionItem | string> | ValidateOptionItem | string
+export type ValidateOptions = Array<ValidateRule | string> | ValidateRule | string
 
 export type OnError = (message: string) => void
+
+const innerTrim = <T>(data: T): T => {
+    if (_.isObjectLike(data)) {
+        for (const i in data) {
+            data[i] = innerTrim(data[i])
+        }
+    }
+    if (_.isString(data)) {
+        return _.trim(data) as any
+    }
+    return data
+}
+
+const trim = <T>(data: T, ignores?: Array<string | string[]>): T => {
+    if (_.isObjectLike(data) && ignores && ignores.length) {
+        const temps: Array<{
+            path: string | string[]
+            value: any
+        }> = []
+        const marker = {}
+        for (const path of ignores) {
+            const value = _.get(data, path, marker)
+            if (value === marker) {
+                continue
+            }
+            _.set(data as any, path, null)
+            temps.push({
+                path,
+                value,
+            })
+        }
+        const ret = innerTrim(data)
+        for (const item of temps) {
+            _.set(ret as any, item.path, item.value)
+        }
+        return ret
+    }
+    return innerTrim(data)
+}
 
 export class LierValidation {
     private onerror: OnError
     constructor (onerror: OnError) {
         this.onerror = onerror
     }
-    private compile (options: ValidateOptions): ValidateOptionItem[] {
-        const rules: ValidateOptionItem[] = []
+    private compile (options: ValidateOptions): ValidateRule[] {
+        const rules: ValidateRule[] = []
         if (!_.isArray(options)) {
-            options = [options as ValidateOptionItem | string]
+            options = [options as ValidateRule | string]
         }
-        for (const option of options as Array<ValidateOptionItem | string>) {
-            let rule: ValidateOptionItem
+        for (const option of options as Array<ValidateRule | string>) {
+            let rule: ValidateRule
             if (_.isObject(option)) {
-                rule = _.assign({}, option) as ValidateOptionItem
+                rule = _.assign({}, option) as ValidateRule
             } else {
                 rule = {
                     lier: option
-                } as ValidateOptionItem
+                } as ValidateRule
             }
             if (!rule.hasOwnProperty('lier')) {
                 continue
@@ -48,19 +86,16 @@ export class LierValidation {
         return function (...args) {
             for (let i = 0; i < rules.length; ++ i) {
                 const rule = rules[i]
-                let arg = args[i]
-                if (rule.optional && arg === undefined) {
-                    continue
-                }
+                let arg = trim(args[i], rule.trim)
                 if (rule.hasOwnProperty('defaults')) {
                     if (_.isObjectLike(arg)) {
                         arg = _.defaultsDeep(arg, rule.defaults)
-                    } else {
-                        arg = args.hasOwnProperty(i + '') ? arg : rule.defaults
+                    } else if (arg === undefined) {
+                        arg = rule.defaults
                     }
                     args[i] = arg
                 }
-                if (!arg && rule.empty) {
+                if (rule.optional && arg === undefined) {
                     continue
                 }
                 if (rule.hasOwnProperty('lier')) {

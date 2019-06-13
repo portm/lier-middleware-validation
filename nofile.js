@@ -9,10 +9,6 @@ module.exports = function (task) {
         return kit.spawn('tsc')
     })
 
-    task('test', function () {
-        return kit.spawn('junit', ['test/*.js'])
-    })
-
     task('lab', function () {
         return kit.spawn('noe', [
             '-b', 'node',
