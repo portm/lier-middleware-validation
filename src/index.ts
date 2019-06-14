@@ -7,7 +7,7 @@ export interface ValidateRule {
     lier?: Tree | string
     defaults?: any
     optional?: boolean
-    trim?: Array<string | string[]>
+    trim?: Array<string | string[]> | boolean
 }
 
 export type ValidateOptions = Array<ValidateRule | string> | ValidateRule | string
@@ -26,7 +26,7 @@ const innerTrim = <T>(data: T): T => {
     return data
 }
 
-const trim = <T>(data: T, ignores?: Array<string | string[]>): T => {
+export const trim = <T>(data: T, ignores?: Array<string | string[]>): T => {
     if (_.isObjectLike(data) && ignores && ignores.length) {
         const temps: Array<{
             path: string | string[]
@@ -86,7 +86,10 @@ export class LierValidation {
         return function (...args) {
             for (let i = 0; i < rules.length; ++ i) {
                 const rule = rules[i]
-                let arg = trim(args[i], rule.trim)
+                let arg = args[i]
+                if (rule.trim !== false) {
+                    arg = trim(arg, rule.trim as Array<string | string[]>)
+                }
                 if (rule.hasOwnProperty('defaults')) {
                     if (_.isObjectLike(arg)) {
                         arg = _.defaultsDeep(arg, rule.defaults)
