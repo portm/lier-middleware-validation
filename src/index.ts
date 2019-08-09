@@ -108,7 +108,7 @@ export class LierValidation {
                         for (const err of ret) {
                             err.path.unshift(`arguments[${i}]`)
                         }
-                        self.onerror(JSON.stringify(ret))
+                        return self.onerror(JSON.stringify(ret))
                     }
                 }
             }
