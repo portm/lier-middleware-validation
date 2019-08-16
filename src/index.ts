@@ -89,6 +89,7 @@ export class LierValidation {
                 let arg = args[i]
                 if (rule.trim !== false) {
                     arg = trim(arg, rule.trim as Array<string | string[]>)
+                    args[i] = arg
                 }
                 if (rule.hasOwnProperty('defaults')) {
                     if (_.isObjectLike(arg)) {
